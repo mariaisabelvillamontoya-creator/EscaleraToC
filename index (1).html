@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Gran Cambio — Escalera de Teoría de Cambio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAFAF8;--surface:#fff;--border:rgba(0,0,0,0.10);--text:#1a1a18;--text2:#5a5a54;--radius:12px;--radius-sm:8px;--font-sans:'DM Sans',sans-serif;--font-serif:'DM Serif Display',serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh;}
+.site-header{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.logo{font-family:var(--font-serif);font-size:1.4rem;color:#3C3489;}
+.logo span{color:#1D9E75;}
+.header-sub{font-size:12px;color:var(--text2);}
+.nav-tabs{display:flex;gap:6px;}
+.ntab{padding:7px 16px;border:1px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;background:var(--surface);color:var(--text2);font-weight:500;font-family:var(--font-sans);transition:all 0.15s;}
+.ntab:hover{border-color:#AFA9EC;color:#3C3489;}
+.ntab.on{background:#3C3489;border-color:#3C3489;color:#fff;}
+.main{padding:1.5rem 2rem 3rem;max-width:1050px;margin:0 auto;}
+.view{display:none;}.view.on{display:block;}
+
+/* BOARD */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px;}
+.game-title{font-family:var(--font-serif);font-size:1.4rem;color:#3C3489;}
+.player-setup{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.player-setup span{font-size:12px;color:var(--text2);}
+.pbtn{padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;font-family:var(--font-sans);transition:all 0.12s;}
+.pbtn.on{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC;font-weight:500;}
+.reset-btn{padding:5px 14px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#A32D2D;font-size:12px;cursor:pointer;font-family:var(--font-sans);}
+.controls{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.dice-btn{padding:10px 24px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;font-weight:500;cursor:pointer;border-radius:var(--radius-sm);transition:all 0.15s;font-family:var(--font-sans);}
+.dice-btn:hover{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489;}
+.dice-result{font-size:32px;min-width:40px;text-align:center;}
+.turn-info{font-size:13px;color:var(--text2);flex:1;}
+.players-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.player-token{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;border:2px solid;cursor:pointer;transition:transform 0.1s;}
+.player-token.active-player{transform:scale(1.15);box-shadow:0 0 0 3px rgba(0,0,0,0.12);}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.board-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:1.25rem;}
+@media(max-width:580px){.board-grid{grid-template-columns:repeat(3,1fr);}}
+.sq{border-radius:10px;border:1.5px solid;padding:9px;min-height:85px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform 0.1s;}
+.sq:hover{transform:translateY(-2px);}
+.sq.current{border-width:3px!important;}
+.sq-num{font-size:10px;font-weight:600;margin-bottom:2px;}
+.sq-label{font-size:11px;line-height:1.3;font-weight:500;flex:1;}
+.sq-type{font-size:9px;padding:2px 5px;border-radius:4px;font-weight:500;display:inline-block;margin-top:4px;}
+.sq-tokens{display:flex;gap:2px;flex-wrap:wrap;margin-top:3px;}
+.sq-tok{width:14px;height:14px;border-radius:50%;border:1.5px solid #fff;font-size:7px;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;}
+.sq-objetivo{background:#EEEDFE;border-color:#AFA9EC;}.sq-objetivo .sq-num{color:#534AB7;}.sq-objetivo .sq-label{color:#3C3489;}.sq-objetivo .sq-type{background:#CECBF6;color:#3C3489;}
+.sq-resultado{background:#E1F5EE;border-color:#5DCAA5;}.sq-resultado .sq-num{color:#0F6E56;}.sq-resultado .sq-label{color:#085041;}.sq-resultado .sq-type{background:#9FE1CB;color:#085041;}
+.sq-supuesto{background:#FAEEDA;border-color:#EF9F27;}.sq-supuesto .sq-num{color:#854F0B;}.sq-supuesto .sq-label{color:#633806;}.sq-supuesto .sq-type{background:#FAC775;color:#633806;}
+.sq-producto{background:#FAECE7;border-color:#F0997B;}.sq-producto .sq-num{color:#993C1D;}.sq-producto .sq-label{color:#712B13;}.sq-producto .sq-type{background:#F5C4B3;color:#712B13;}
+.sq-indicador{background:#E6F1FB;border-color:#85B7EB;}.sq-indicador .sq-num{color:#185FA5;}.sq-indicador .sq-label{color:#0C447C;}.sq-indicador .sq-type{background:#B5D4F4;color:#0C447C;}
+.sq-peligro{background:#FCEBEB;border-color:#F09595;}.sq-peligro .sq-num{color:#A32D2D;}.sq-peligro .sq-label{color:#791F1F;}.sq-peligro .sq-type{background:#F7C1C1;color:#791F1F;}
+.sq-bonus{background:#EAF3DE;border-color:#97C459;}.sq-bonus .sq-num{color:#3B6D11;}.sq-bonus .sq-label{color:#27500A;}.sq-bonus .sq-type{background:#C0DD97;color:#27500A;}
+.sq-meta{background:#3C3489;border-color:#26215C;}.sq-meta .sq-num{color:#CECBF6;}.sq-meta .sq-label{color:#fff;font-size:12px;font-weight:600;}
+.sq-start{background:#F1EFE8;border-color:#B4B2A9;}.sq-start .sq-num{color:#5F5E5A;}.sq-start .sq-label{color:#444441;}
+
+/* QUESTION PANEL */
+.qpanel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.qp-meta{font-size:11px;font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.qp-type-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:500;}
+.qp-title{font-family:var(--font-serif);font-size:18px;color:var(--text);margin-bottom:10px;}
+.qp-question{font-size:14px;color:var(--text);line-height:1.7;padding:12px 14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:10px;border-left:3px solid #AFA9EC;}
+.expand-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--radius-sm);border:1px solid #AFA9EC;background:#EEEDFE;color:#3C3489;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-sans);margin-bottom:10px;width:fit-content;transition:all 0.15s;}
+.expand-btn:hover{background:#CECBF6;}
+.expand-arrow{font-size:10px;transition:transform 0.2s;}
+.expand-arrow.open{transform:rotate(180deg);}
+.expansion{display:none;border-radius:var(--radius-sm);padding:14px;background:#F8F7FF;border:1px solid #AFA9EC;margin-bottom:10px;}
+.expansion.open{display:block;}
+.exp-section{margin-bottom:12px;}
+.exp-section:last-child{margin-bottom:0;}
+.exp-label{font-size:11px;font-weight:600;color:#3C3489;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em;}
+.exp-text{font-size:13px;color:var(--text);line-height:1.65;}
+.exp-example{background:#fff;border-radius:6px;padding:9px 11px;margin-top:6px;border:1px solid #CECBF6;}
+.exp-example-label{font-size:10px;font-weight:600;color:#534AB7;margin-bottom:3px;text-transform:uppercase;}
+.exp-example-bad{font-size:12px;color:#A32D2D;line-height:1.5;padding:5px 8px;background:#FCEBEB;border-radius:4px;margin-bottom:4px;}
+.exp-example-good{font-size:12px;color:#085041;line-height:1.5;padding:5px 8px;background:#E1F5EE;border-radius:4px;}
+.qp-alert{font-size:12px;padding:9px 12px;border-radius:var(--radius-sm);border-left:3px solid;line-height:1.55;margin-bottom:10px;}
+.qp-alert.red{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D;}
+.qp-alert.green{background:#EAF3DE;border-color:#3B6D11;color:#27500A;}
+.qp-alert.amber{background:#FAEEDA;border-color:#BA7517;color:#633806;}
+.answer-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.btn-ok{padding:9px 20px;border-radius:var(--radius-sm);border:1px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.btn-ok:hover{background:#9FE1CB;}
+.btn-fail{padding:9px 20px;border-radius:var(--radius-sm);border:1px solid #E24B4A;background:#FCEBEB;color:#A32D2D;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.btn-fail:hover{background:#F7C1C1;}
+.btn-skip{padding:9px 20px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font-sans);}
+.register-btn{padding:9px 20px;border-radius:var(--radius-sm);border:1px solid #085041;background:#085041;color:#fff;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.register-btn:hover{background:#0F6E56;}
+.empty-qp{text-align:center;padding:2rem;color:var(--text2);font-size:14px;}
+.log-label{font-size:11px;color:var(--text2);font-weight:500;margin-bottom:4px;}
+.log-box{background:var(--bg);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--text2);max-height:80px;overflow-y:auto;line-height:1.9;border:1px solid var(--border);}
+
+/* TABLA ENTREGABLE */
+.tabla-intro{background:#EEEDFE;border:1px solid #AFA9EC;border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;}
+.tabla-intro h2{font-family:var(--font-serif);font-size:1.3rem;color:#3C3489;margin-bottom:6px;}
+.tabla-intro p{font-size:13px;color:#534AB7;line-height:1.6;}
+.tabla-section{margin-bottom:1.5rem;}
+.tabla-section-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.tabla-section-hint{font-size:12px;color:var(--text2);font-style:italic;margin-bottom:10px;line-height:1.5;}
+.tabla-row-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:10px;}
+.tabla-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+.tabla-row-label{font-size:13px;font-weight:600;color:var(--text);}
+.status-pill{font-size:11px;padding:3px 10px;border-radius:8px;font-weight:500;}
+.status-done{background:#E1F5EE;color:#085041;}
+.status-pend{background:#F1EFE8;color:#444441;}
+.chain-grid{display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;gap:6px;align-items:start;margin-bottom:10px;}
+@media(max-width:640px){.chain-grid{grid-template-columns:1fr;}.chain-arr{display:none;}}
+.chain-lbl{font-size:10px;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text2);}
+.chain-arr{display:flex;align-items:flex-start;padding-top:22px;justify-content:center;color:var(--text2);font-size:18px;}
+textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-size:13px;font-family:var(--font-sans);background:#fff;color:var(--text);resize:vertical;min-height:60px;transition:border-color 0.15s;}
+textarea:focus{outline:none;border-color:#AFA9EC;}
+.field-lbl{font-size:12px;font-weight:600;margin-bottom:3px;color:var(--text);}
+.field-hint{font-size:11px;color:var(--text2);margin-bottom:5px;font-style:italic;}
+.saved-block{border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);background:var(--bg);}
+.saved-item{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.55;}
+.saved-item strong{font-weight:600;}
+.saved-meta{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5;}
+.btn-save{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.btn-save:hover{background:#9FE1CB;}
+.btn-edit{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font-sans);}
+.btn-copy{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid #AFA9EC;background:#EEEDFE;color:#3C3489;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.btn-copy:hover{background:#CECBF6;}
+.btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.export-row{display:flex;justify-content:flex-end;margin-top:8px;}
+.footer{text-align:center;padding:2rem;font-size:12px;color:var(--text2);border-top:1px solid var(--border);margin-top:2rem;}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div>
+    <div class="logo">El Gran <span>Cambio</span></div>
+    <div class="header-sub">Escalera de Teoría de Cambio &middot; EAFIT 2026</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="ntab on" onclick="switchView('tablero',this)">Tablero</button>
+    <button class="ntab" onclick="switchView('tabla',this)">Tabla entregable</button>
+  </div>
+</header>
+<main class="main">
+
+<!-- TABLERO -->
+<div id="tablero" class="view on">
+  <div class="top-bar">
+    <div class="game-title">Escalera de Teoría de Cambio</div>
+    <div class="players-row" id="player-tokens"></div>
+  </div>
+  <div class="player-setup">
+    <span>Grupos:</span>
+    <button class="pbtn" id="pb2" onclick="setPlayers(2)">2</button>
+    <button class="pbtn on" id="pb3" onclick="setPlayers(3)">3</button>
+    <button class="pbtn" id="pb4" onclick="setPlayers(4)">4</button>
+    <button class="reset-btn" onclick="resetGame()">Reiniciar</button>
+  </div>
+  <div class="controls">
+    <button class="dice-btn" onclick="rollDice()">Tirar dado</button>
+    <div class="dice-result" id="dice-display">—</div>
+    <div class="turn-info" id="turn-info">Configura los grupos y tira el dado.</div>
+  </div>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#EEEDFE;border:1px solid #AFA9EC;"></div>Objetivo</div>
+    <div class="leg"><div class="leg-dot" style="background:#E1F5EE;border:1px solid #5DCAA5;"></div>Resultado</div>
+    <div class="leg"><div class="leg-dot" style="background:#FAEEDA;border:1px solid #EF9F27;"></div>Supuesto</div>
+    <div class="leg"><div class="leg-dot" style="background:#FAECE7;border:1px solid #F0997B;"></div>Producto</div>
+    <div class="leg"><div class="leg-dot" style="background:#E6F1FB;border:1px solid #85B7EB;"></div>Indicador</div>
+    <div class="leg"><div class="leg-dot" style="background:#FCEBEB;border:1px solid #F09595;"></div>Peligro</div>
+    <div class="leg"><div class="leg-dot" style="background:#EAF3DE;border:1px solid #97C459;"></div>Bonus</div>
+  </div>
+  <div class="board-grid" id="board"></div>
+  <div class="qpanel" id="qpanel"><div class="empty-qp">Toca una casilla o tira el dado para ver la pregunta.</div></div>
+  <div class="log-label">Registro de la partida</div>
+  <div class="log-box" id="game-log">El juego comienza.</div>
+</div>
+
+<!-- TABLA -->
+<div id="tabla" class="view">
+  <div class="tabla-intro">
+    <h2>Tabla de teoría de cambio</h2>
+    <p>Completen esta tabla durante el juego. Cada vez que el grupo supere una casilla marcada con "registrar", el comunicador/a llena la fila correspondiente. Al terminar, esta tabla es el entregable del grupo.</p>
+  </div>
+  <div id="tabla-content"></div>
+</div>
+
+</main>
+<footer class="footer">El Gran Cambio &middot; Teoría de Cambio &middot; Comunicación Social &middot; EAFIT 2026</footer>
+
+<script>
+const SQUARES=[
+  {n:0,label:'Salida',type:'start',q:null,exp:null,alert:null,move:0,registro:false},
+  {n:1,label:'¿Cuál es el problema real?',type:'objetivo',registro:true,
+   q:'Describan el problema en una sola oración. ¿Es el problema real o es el síntoma de algo más profundo?',
+   exp:{
+     concepto:'El problema real es la causa raíz de la situación que quieren cambiar. El síntoma es la manifestación visible de ese problema. Si intervienen sobre el síntoma sin tocar la causa, el problema regresa.',
+     claves:['¿Qué produce este problema? ¿Qué tendría que cambiar para que desapareciera de raíz?','¿Si resolvieran el problema que describen, la causa seguiría activa?','¿Hay datos, testimonios o evidencia que respalden que este es el problema real?'],
+     malo:'Problema planteado como síntoma: "Las veteranas no tienen seguidores en redes sociales." Esto describe una consecuencia, no la causa.',
+     bueno:'Problema como causa raíz: "La sociedad no incluye a las mujeres en el concepto de veterano, lo que las hace invisibles en el reconocimiento público."'
+   },
+   alert:{type:'amber',text:'Trampa frecuente: confundir el síntoma con el problema. Si el problema desaparece solo con comunicarlo, probablemente es un síntoma.'},move:0},
+  {n:2,label:'¿El objetivo ataca la causa o el síntoma?',type:'objetivo',registro:true,
+   q:'Lean su objetivo en voz alta. Si lo lograran, ¿el problema de la casilla 1 desaparecería de raíz o solo en la superficie?',
+   exp:{
+     concepto:'Un objetivo bien formulado ataca la causa del problema. Si el objetivo solo reduce el síntoma, produce cambios temporales que desaparecen cuando el proyecto termina. Además, el objetivo debe cumplir los criterios SMART: Específico, Medible, Alcanzable, Relevante y con Tiempo definido.',
+     claves:['¿El objetivo nombra un cambio en las personas, en sus creencias o en el contexto — o solo en las actividades del equipo?','¿Tiene una meta numérica o cualitativa verificable?','¿Tiene un plazo de tiempo definido?'],
+     malo:'Objetivo sobre síntoma: "Aumentar el número de likes y seguidores de Mujeres Valientes en Instagram." Esto mide actividad, no cambio real.',
+     bueno:'Objetivo sobre causa: "Que el 60% de los públicos primarios modifiquen su percepción sobre el papel de las mujeres veteranas en Colombia en un plazo de 2 meses."'
+   },
+   alert:{type:'red',text:'Error clásico: "aumentar el número de likes" como objetivo cuando el problema es falta de reconocimiento. Los likes no son reconocimiento.'},move:0},
+  {n:3,label:'¡Bonus! Objetivo SMART completo',type:'bonus',registro:false,
+   q:'Demuestren que su objetivo cumple los 5 criterios SMART con evidencia para cada uno. Si pasan los cinco, avanzan 2 casillas.',
+   exp:{
+     concepto:'SMART es una prueba de realismo. Un objetivo que no cumple los cinco criterios es un deseo, no un compromiso verificable.',
+     claves:['Específico: ¿qué cambia exactamente, en quién, cómo?','Medible: ¿cómo sabrían que lo lograron? ¿Qué número o evidencia lo confirma?','Alcanzable: ¿tienen los recursos, el tiempo y los actores necesarios?','Relevante: ¿ataca la causa del problema identificado?','Tiempo: ¿cuándo exactamente?'],
+     malo:'Objetivo no-SMART: "Mejorar la visibilidad de los artistas emergentes." No dice cuánto, cómo, en quién, ni cuándo.',
+     bueno:'Objetivo SMART: "Vincular a 20 artistas emergentes de Medellín en una comunidad activa durante 8 semanas, logrando que el 60% participe en al menos 3 actividades de conexión."'
+   },
+   alert:{type:'green',text:'Si el objetivo pasa la prueba SMART completa: el grupo avanza 2 casillas adicionales.'},move:2},
+  {n:4,label:'¿Los resultados llevan al objetivo?',type:'resultado',registro:true,
+   q:'Para cada resultado esperado: si ese resultado ocurriera, ¿los acercaría directamente al objetivo? ¿Pueden trazar una línea lógica de cada resultado al objetivo?',
+   exp:{
+     concepto:'Los resultados son los cambios concretos que produce la intervención en distintos momentos del tiempo. Se organizan en cadena: resultados a corto plazo llevan a resultados intermedios, que llevan al impacto final. Cada resultado debe ser un escalón real hacia el objetivo, no un paso paralelo.',
+     claves:['¿Pueden completar la frase: "Si logramos este resultado, estaremos más cerca del objetivo porque..."?','¿Hay resultados que suenan importantes pero no conectan con el objetivo?','¿La cadena va de menor a mayor alcance de forma lógica?'],
+     malo:'Resultado desconectado: "La comunidad conoce nuestra organización." Conocer no es lo mismo que reconocer el valor o cambiar una creencia.',
+     bueno:'Resultado conectado: "Las personas que vieron el documental describen a las mujeres veteranas con atributos de liderazgo y sacrificio, no solo de domesticidad." Ese resultado sí acerca al objetivo de resignificación.'
+   },
+   alert:{type:'amber',text:'Ojo: los resultados no son actividades. "Realizar un taller" no es un resultado — es una actividad. El resultado es lo que cambia después del taller.'},move:0},
+  {n:5,label:'¿Los resultados son tangibles y SMART?',type:'resultado',registro:true,
+   q:'Para cada resultado: ¿cómo se vería en la vida real si ese resultado ocurriera? ¿Es medible, alcanzable y tiene un plazo?',
+   exp:{
+     concepto:'Un resultado tangible es observable en la vida real de las personas: en lo que dicen, hacen o creen. Si el resultado solo puede existir en un informe pero no en el comportamiento o las actitudes de alguien, es abstracto. Los resultados también deben ser SMART.',
+     claves:['¿Pueden describir cómo se vería el resultado en el día a día de una persona concreta?','¿Qué haría diferente alguien en quien el resultado ocurrió?','¿El resultado tiene un indicador que permitiría medirlo?'],
+     malo:'Resultado abstracto: "Mayor conciencia sobre el problema de la digitalización." ¿Cómo se ve eso? ¿Cómo se mide?',
+     bueno:'Resultado tangible: "El 70% de los miembros de la Tejeduría usan el chatbot voluntariamente al menos una vez por semana sin necesidad de acompañamiento externo."'
+   },
+   alert:{type:'red',text:'Trampa: "mayor conciencia" o "mejor comprensión" son resultados abstractos. ¿Qué hace alguien con conciencia que antes no hacía? Eso es el resultado tangible.'},move:0},
+  {n:6,label:'¡Peligro! Coherencia de la cadena',type:'peligro',registro:false,
+   q:'El escéptico/a elige cualquier eslabón y pregunta: "¿Cómo sabemos que esto realmente lleva a lo siguiente?" Si no pueden responder con lógica sólida, retroceden 2 casillas.',
+   exp:{
+     concepto:'La coherencia de la cadena se rompe cuando hay un salto lógico sin justificación — cuando asumimos que A produce B sin poder explicar por qué. El escéptico/a es quien tiene el poder de señalar esas rupturas.',
+     claves:['¿La conexión entre cada resultado está justificada o solo "suena bien"?','¿Hay algún resultado que depende de que algo ocurra por arte de magia?','¿La cadena tiene la dirección correcta: causa → efecto, no al revés?'],
+     malo:'Ruptura lógica: "Si hacemos talleres de gamificación, entonces la comunidad adoptará lo digital." ¿Por qué? ¿Qué pasa en medio?',
+     bueno:'Conexión justificada: "Si los miembros viven una experiencia donde lo digital y lo presencial se combinan positivamente, entonces asociarán la herramienta digital con algo que potencia el vínculo, y eso cambiará la creencia que hoy bloquea la adopción."'
+   },
+   alert:{type:'red',text:'Si hay un eslabón sin justificación: retrocede 2 casillas y revisa la cadena.'},move:-2},
+  {n:7,label:'¿Los supuestos son realidades o deseos?',type:'supuesto',registro:true,
+   q:'Identifiquen sus tres supuestos más importantes. Para cada uno: ¿qué evidencia tienen de que es verdadero? ¿Qué pasa si no lo es?',
+   exp:{
+     concepto:'Un supuesto es una condición que asumimos como dada para que la teoría de cambio funcione. Los supuestos pueden ser sobre las personas (que quieren participar), sobre el contexto (que el ambiente es favorable) o sobre la causalidad (que A produce B). Si un supuesto falla, la teoría de cambio se rompe en ese punto.',
+     claves:['¿Tienen evidencia — datos, conversaciones, experiencias previas — que respalde cada supuesto?','¿Qué pasaría con el proyecto si ese supuesto fuera falso?','¿Tienen una estrategia alternativa si el supuesto falla?'],
+     malo:'Supuesto-deseo: "Las personas confiarán en nosotros porque somos estudiantes universitarios con buenas intenciones." La confianza no se da por intenciones — se construye con presencia y relaciones.',
+     bueno:'Supuesto verificable: "Asumimos que los artistas emergentes quieren conectarse con otros del sector. Evidencia: en los grupos focales realizados, el 80% mencionó el aislamiento como su principal dificultad."'
+   },
+   alert:{type:'amber',text:'Un supuesto sin evidencia es un riesgo no gestionado. Nómbrelo como riesgo y proponga una estrategia alternativa.'},move:0},
+  {n:8,label:'¿Los participantes realmente participarán?',type:'supuesto',registro:true,
+   q:'¿Tienen evidencia de que las personas a quienes va dirigida la intervención quieren participar, tienen las habilidades necesarias y lo harán por el bien común?',
+   exp:{
+     concepto:'Uno de los supuestos más frágiles en cualquier teoría de cambio es asumir que las personas participarán activamente. La participación real depende de motivación, disponibilidad, habilidades y confianza — ninguna de las cuales se puede asumir sin evidencia.',
+     claves:['¿Qué mecanismo concreto garantiza la participación? ¿Hay incentivos reales?','¿Los participantes tienen las habilidades y conocimientos necesarios para contribuir como esperan?','¿Podrían tener motivaciones individuales que afecten el proceso colectivo?','¿Asistirán regularmente o solo al principio?'],
+     malo:'Supuesto frágil: "La comunidad participará porque el tema le importa y todos quieren mejorar." Las buenas intenciones no garantizan presencia ni compromiso sostenido.',
+     bueno:'Supuesto con mecanismo: "Los participantes asistirán porque el espacio es presencial en su territorio, el horario fue acordado con ellos, y hay un sistema de recordatorio semanal. Validado en conversaciones previas."'
+   },
+   alert:{type:'red',text:'Si no tienen mecanismo de participación: el supuesto es un deseo. Propongan qué harán si la participación es menor de lo esperado.'},move:0},
+  {n:9,label:'¿Los socios necesarios están disponibles?',type:'supuesto',registro:true,
+   q:'¿Qué actores externos necesitan que actúen? ¿Han confirmado su participación? ¿Qué pasa si alguno no aparece?',
+   exp:{
+     concepto:'Muchas teorías de cambio dependen de actores que el equipo no controla: aliados institucionales, líderes comunitarios, medios de comunicación, entidades gubernamentales. Si esos actores no participan, la cadena se rompe. Es necesario identificarlos, confirmar su disponibilidad y tener un plan alternativo.',
+     claves:['¿Qué actores son indispensables para que el resultado ocurra?','¿Han hablado con ellos? ¿Han confirmado su participación?','¿Qué pasa con el proyecto si ese socio clave no aparece o se retira?'],
+     malo:'Supuesto sobre socios: "Contaremos con el apoyo del Ministerio de Defensa para difundir el documental." ¿Han hablado con ellos? ¿Tienen un compromiso formal?',
+     bueno:'Socio gestionado: "La Escuela de Policías Carlos E. Restrepo confirmó el espacio de grabación y se comprometió a difundir el documental en sus canales internos. Tienen una carta de intención firmada."'
+   },
+   alert:{type:'amber',text:'Si hay un socio clave sin confirmar: ajusten el alcance del proyecto o describan qué harán sin ese socio.'},move:0},
+  {n:10,label:'¡Bonus! Supuestos con evidencia',type:'bonus',registro:false,
+   q:'Presenten evidencia real para cada supuesto. No basta nombrarlo — deben decir: "sabemos que este supuesto es válido porque..." Si verifican todos sus supuestos, avanzan 2 casillas.',
+   exp:{
+     concepto:'La evidencia puede ser cuantitativa (datos, estadísticas) o cualitativa (testimonios, observaciones, experiencias documentadas). Lo importante es que no sea inventada ni supuesta — debe provenir de algo que el grupo haya encontrado en su diagnóstico.',
+     claves:['¿La evidencia viene de su propio diagnóstico o de investigaciones similares?','¿Es suficientemente específica para el contexto de su proyecto?','¿Alguien externo podría verificarla?'],
+     malo:'Evidencia vaga: "Creemos que funciona porque hemos visto proyectos similares." ¿Cuáles proyectos? ¿En qué contexto? ¿Con qué resultados?',
+     bueno:'Evidencia concreta: "En los tres grupos focales realizados, los miembros de la Tejeduría describieron lo digital como amenaza para el vínculo presencial. Eso confirma que la creencia limitante existe y es la que hemos identificado."'
+   },
+   alert:{type:'green',text:'Si todos los supuestos tienen evidencia verificable: el grupo avanza 2 casillas adicionales.'},move:2},
+  {n:11,label:'¿Los productos producen los resultados?',type:'producto',registro:true,
+   q:'Para cada producto o actividad: ¿pueden explicar el mecanismo exacto por el cual ese producto produce el resultado esperado?',
+   exp:{
+     concepto:'La coherencia entre productos y resultados se demuestra explicando el mecanismo: la cadena causal concreta que conecta el producto con el resultado. No basta con que la conexión parezca lógica o que "haya funcionado en otros contextos". El mecanismo debe ser específico para este producto, este público y este contexto.',
+     claves:['¿Pueden completar: "Este producto produce este resultado porque..."?','¿El mecanismo supone que las personas verán, escucharán o experimentarán algo que cambie su creencia o comportamiento?','¿La escala del producto es proporcional al resultado que esperan?'],
+     malo:'Sin mecanismo: "Hacemos un video y las personas reconocerán a las veteranas." ¿Por qué ese video específicamente produciría reconocimiento? ¿Qué tiene el video que mueve esa creencia?',
+     bueno:'Con mecanismo: "El documental pone rostro y voz a mujeres veteranas hablando en primera persona desde espacios institucionales que el público asocia con lo masculino. Esa imagen contradice directamente el estereotipo y produce disonancia cognitiva, que es el mecanismo que puede mover la creencia."'
+   },
+   alert:{type:'red',text:'Si no pueden explicar el mecanismo: la relación entre producto y resultado es una esperanza, no una teoría. Esa es la ruptura más frecuente.'},move:0},
+  {n:12,label:'¿La escala es proporcional?',type:'producto',registro:true,
+   q:'Pongan cada producto junto al resultado que produce. ¿La escala del producto es proporcional al cambio que esperan?',
+   exp:{
+     concepto:'La incoherencia de escala ocurre cuando la intervención es pequeña pero el resultado esperado es grande. Un taller de dos horas no produce un cambio de creencia profundo en una comunidad de 140 personas. Un video no resignifica una norma social. La escala importa.',
+     claves:['¿Cuántas personas alcanzará el producto? ¿Es suficiente para el resultado que esperan?','¿Cuánto tiempo de exposición tiene cada persona con el producto? ¿Es suficiente para producir el cambio?','¿El producto llega a las personas que necesitan cambiar — o llega a quienes ya están convencidas?'],
+     malo:'Incoherencia de escala: "Con un post en Instagram esperamos que el gobierno cambie su política sobre veteranas." El alcance de un post orgánico no produce cambios institucionales.',
+     bueno:'Coherencia de escala: "Con 3 sesiones de gamificación de 2 horas cada una, esperamos que los miembros prueben las herramientas en un contexto seguro y cambien su percepción inicial. No esperamos adopción masiva — ese es el resultado intermedio, no el de corto plazo."'
+   },
+   alert:{type:'amber',text:'Si la escala no es proporcional: ajusten el alcance del resultado o amplíen las actividades. No finjan que el tamaño no importa.'},move:0},
+  {n:13,label:'¡Peligro! El escéptico/a interroga',type:'peligro',registro:false,
+   q:'El escéptico/a elige el eslabón más débil de toda la cadena y pregunta: "¿Qué evidencia tienen de que esto realmente funciona así?" Si la respuesta es "lo asumimos", retroceden 3 casillas.',
+   exp:{
+     concepto:'El eslabón más débil es el punto donde la teoría de cambio es más vulnerable. Encontrarlo no es un fracaso — es el trabajo más importante del proceso. Una teoría de cambio honesta identifica sus puntos débiles y los nombra explícitamente.',
+     claves:['¿Qué parte de la cadena tienen menos evidencia para sostener?','¿Hay algún paso que depende de que algo ocurra "porque sí"?','¿Qué pasaría con el proyecto si ese eslabón falla?'],
+     malo:'Eslabón débil no reconocido: el grupo asume que los artistas participarán en la muestra musical porque "es una oportunidad única" sin ningún mecanismo de convocatoria o incentivo real.',
+     bueno:'Eslabón débil reconocido: "Nuestro punto más frágil es que los artistas con la Gran Suposición más fuerte son los que menos probabilidad tienen de unirse. Para eso tenemos una estrategia de reclutamiento por pares — artistas que ya participan invitan a artistas que no."'
+   },
+   alert:{type:'red',text:'Si la respuesta al escéptico/a es "lo asumimos": retrocede 3 casillas y fortalece ese eslabón.'},move:-3},
+  {n:14,label:'¿Los indicadores prueban el resultado?',type:'indicador',registro:true,
+   q:'Para cada resultado, ¿tienen un indicador que pruebe que ese resultado ocurrió — no que la actividad se realizó?',
+   exp:{
+     concepto:'Un indicador válido mide el cambio producido por la intervención, no la intervención misma. La confusión más frecuente es medir actividades (cuántos talleres se hicieron, cuántas personas asistieron) en lugar de resultados (qué cambió en las personas que asistieron).',
+     claves:['¿El indicador mide algo que cambia en las personas o en el contexto — no en el equipo del proyecto?','¿Puede tener valores distintos dependiendo de si el resultado ocurrió o no?','¿Es observable sin ambigüedad? ¿Dos personas distintas llegarían al mismo valor?'],
+     malo:'Indicador de actividad: "Número de personas que asistieron al taller." Esto mide la actividad, no el resultado. Alguien puede asistir sin que nada cambie en su percepción.',
+     bueno:'Indicador de resultado: "Porcentaje de asistentes que, en encuesta post-taller, describen las herramientas digitales como complemento al vínculo presencial — comparado con el porcentaje antes del taller."'
+   },
+   alert:{type:'red',text:'Indicador inválido: "número de likes", "cantidad de asistentes", "posts publicados". Estos miden actividad, no cambio.'},move:0},
+  {n:15,label:'¿El indicador es independiente y verificable?',type:'indicador',registro:true,
+   q:'¿Quién mide el indicador? ¿Podría alguien externo medirlo y llegar al mismo resultado?',
+   exp:{
+     concepto:'Un indicador que solo puede medir quien ejecuta el proyecto tiene un problema de independencia: el sesgo de confirmación lleva a ver el cambio que queremos ver. Los mejores indicadores pueden ser medidos por personas externas al proyecto, por la propia comunidad, o por datos que existen independientemente del proyecto.',
+     claves:['¿Puede alguien externo al proyecto medir este indicador con los mismos datos?','¿La forma de medir el indicador depende de la interpretación del equipo o es objetiva?','¿Tienen una línea de base — cómo estaban las cosas antes de la intervención — para comparar?'],
+     malo:'Indicador no verificable: "El equipo evaluará si hubo cambio de percepción en la comunidad." ¿Con qué criterio? ¿Quién valida esa evaluación?',
+     bueno:'Indicador independiente: "Encuesta anónima aplicada por un integrante de la comunidad (no del equipo) antes y después de la intervención, con preguntas estandarizadas sobre percepción de las herramientas digitales."'
+   },
+   alert:{type:'amber',text:'Mejor práctica: incluir al menos un indicador verificable por alguien externo al equipo o por la propia comunidad.'},move:0},
+  {n:16,label:'¡Bonus! Indicadores sólidos',type:'bonus',registro:false,
+   q:'Presenten un indicador por resultado que sea: específico, independiente, y vinculado al cambio (no a la actividad). Si todos cumplen los tres criterios, avanzan 2 casillas.',
+   exp:{
+     concepto:'Un indicador sólido es aquel que, si el resultado no ocurrió, daría un número o evidencia diferente. Si el indicador siempre da bien sin importar lo que pase, no mide nada. La solidez se prueba preguntando: "¿Qué tendría que ocurrir para que este indicador diera mal?"',
+     claves:['¿Qué tendría que ocurrir para que el indicador diera un resultado negativo?','¿El indicador tiene una meta numérica o cualitativa concreta?','¿Tienen un plan para recolectar los datos del indicador durante y después del proyecto?'],
+     malo:'Indicador débil: "Feedback positivo de los participantes." ¿Cuánto es suficiente? ¿Qué tipo de feedback? ¿Comparado con qué?',
+     bueno:'Indicador sólido: "Al menos el 60% de los participantes en la encuesta post-intervención responde que lo digital "complementa" o "potencia" el vínculo presencial, comparado con menos del 20% en la encuesta inicial."'
+   },
+   alert:{type:'green',text:'Si todos los indicadores son sólidos: el grupo avanza 2 casillas adicionales.'},move:2},
+  {n:17,label:'¿La cadena es coherente de principio a fin?',type:'resultado',registro:true,
+   q:'El evaluador/a lee la cadena completa: problema → objetivo → supuestos → resultados → productos → indicadores. En cada flecha: "¿Por qué esto lleva a lo siguiente?"',
+   exp:{
+     concepto:'La revisión de coherencia completa es el momento donde el grupo ve su teoría de cambio como un todo por primera vez. Es normal encontrar inconsistencias — lo importante es nombrarlas y resolverlas antes de presentar. Una teoría de cambio honesta es más sólida que una que parece perfecta.',
+     claves:['¿Hay algún salto en la cadena que no puede justificarse?','¿Los supuestos están ubicados en el lugar correcto — entre los eslabones que condicionan, no al final como declaración?','¿Los indicadores miden los resultados que la cadena propone, o miden otra cosa?'],
+     malo:'Cadena con ruptura: Objetivo = resignificación social → Resultado = más seguidores → Producto = posts en Instagram → Indicador = número de likes. Ningún eslabón lleva al siguiente de forma lógica.',
+     bueno:'Cadena coherente: Problema = creencia limitante → Objetivo = transformar esa creencia → Resultado = personas que describen diferente el concepto → Producto = documental con mecanismo de disonancia cognitiva → Indicador = cambio en el lenguaje usado por el público al hablar del tema.'
+   },
+   alert:{type:'amber',text:'Si hay alguna flecha que no pueden justificar: identifíquenla explícitamente. Una ruptura reconocida es más valiosa que una ignorada.'},move:0},
+  {n:18,label:'¿Es alcanzable y sostenible?',type:'resultado',registro:true,
+   q:'Con los recursos y el tiempo disponibles: ¿es realista lograr estos resultados? ¿El cambio se sostiene cuando el proyecto termine?',
+   exp:{
+     concepto:'La sostenibilidad es la prueba final de una teoría de cambio. Si el cambio desaparece cuando el equipo se retira, no es un cambio — es una actividad temporal. La sostenibilidad requiere que el cambio esté anclado en las personas, las instituciones o los sistemas, no en la presencia del equipo.',
+     claves:['¿Qué mecanismo garantiza que el cambio persista después de que el proyecto termine?','¿Los beneficiarios del cambio tienen las capacidades para mantenerlo solos?','¿Hay recursos, estructuras o alianzas que sostengan el cambio a largo plazo?'],
+     malo:'Sin sostenibilidad: "El equipo hará el seguimiento y mantendrá activa la comunidad después del proyecto." Eso no es sostenibilidad — es dependencia.',
+     bueno:'Con sostenibilidad: "La comunidad Red 440 tendrá un equipo de liderazgo propio elegido por los artistas, con roles definidos y herramientas de gestión, para que pueda operar sin el equipo académico."'
+   },
+   alert:{type:'red',text:'Si el cambio depende de la presencia continua del equipo: no hay sostenibilidad. ¿Qué mecanismo garantiza que el cambio persista?'},move:0},
+  {n:19,label:'¡Peligro! Revisión final',type:'peligro',registro:false,
+   q:'El escéptico/a tiene una última oportunidad. Si identifica una incoherencia no resuelta, el grupo retrocede 2 casillas.',
+   exp:{
+     concepto:'Este es el último filtro antes de la presentación. Su función no es destruir la teoría de cambio sino fortalecerla. Una incoherencia encontrada aquí es una oportunidad de mejora — una incoherencia encontrada ante el jurado es un problema.',
+     claves:['¿Hay alguna pregunta de las casillas anteriores que el grupo no pudo responder satisfactoriamente?','¿La tabla entregable tiene todas las filas completas con respuestas sólidas?','¿Hay algún supuesto que sigue siendo un deseo y no una realidad verificable?'],
+     malo:'Incoherencia no resuelta: el grupo tiene un indicador que mide actividad (número de asistentes) pero dice que mide resultado. Eso no fue corregido en la casilla 14.',
+     bueno:'Incoherencia resuelta: "En la casilla 14 detectamos que nuestro indicador medía actividad. Lo corregimos: ahora medimos el porcentaje de participantes que cambian su respuesta en la encuesta pre-post."'
+   },
+   alert:{type:'red',text:'Si hay una ruptura sin resolver: retrocede 2 casillas.'},move:-2},
+  {n:20,label:'META — Teoría de cambio completa',type:'meta',registro:false,
+   q:'Presentación de 5 minutos ante la clase. Expliquen el problema real, el objetivo, los supuestos verificados, la cadena de resultados, los productos con su mecanismo, y los indicadores. Justifiquen cada conexión.',
+   exp:{
+     concepto:'Una teoría de cambio no es perfecta — es honesta. La solidez no viene de no tener riesgos sino de haberlos identificado y gestionado. Una presentación que reconoce los supuestos frágiles y tiene estrategias alternativas es más creíble que una que pretende que todo funcionará sin problemas.',
+     claves:['¿Pueden explicar toda la cadena en 5 minutos sin perder ningún eslabón?','¿Pueden nombrar el supuesto más frágil y la estrategia alternativa si falla?','¿La tabla entregable está completa y puede entenderse sin la presentación oral?'],
+     malo:'Presentación débil: "Haremos talleres y videos y esperamos que la comunidad cambie." Sin mecanismo, sin supuestos, sin indicadores.',
+     bueno:'Presentación sólida: "El problema es X creencia. El objetivo es transformarla. Lo haremos con Y producto porque Z es el mecanismo. Asumimos que W es verdad — tenemos esta evidencia. Lo mediremos con V indicador. El riesgo principal es U, y si ocurre haremos T."'
+   },
+   alert:{type:'green',text:'Pregunta de cierre: ¿en qué casilla se rompió más veces la cadena? ¿Qué dice eso sobre los riesgos reales del proyecto?'},move:0},
+];
+
+const PLAYERS=[
+  {name:'Grupo 1',color:'#7F77DD',bg:'#EEEDFE',pos:0},
+  {name:'Grupo 2',color:'#1D9E75',bg:'#E1F5EE',pos:0},
+  {name:'Grupo 3',color:'#D85A30',bg:'#FAECE7',pos:0},
+  {name:'Grupo 4',color:'#BA7517',bg:'#FAEEDA',pos:0},
+];
+
+const TABLE_ROWS=[
+  {id:'problema',label:'Problema real identificado',hint:'Completen al superar casilla 1. Describan el problema como causa raíz, no como síntoma.',fields:['Problema real (causa raíz)','Por qué este es el problema real (evidencia o argumentación)']},
+  {id:'objetivo',label:'Objetivo de la intervención',hint:'Completen al superar casilla 2. El objetivo debe atacar la causa e incluir los criterios SMART.',fields:['Objetivo formulado','Cómo cumple los criterios SMART']},
+  {id:'supuestos',label:'Supuestos y su verificación',hint:'Completen al superar casillas 7, 8 y 9. Incluyan evidencia para cada supuesto.',fields:['Supuesto 1 y evidencia','Supuesto 2 y evidencia','Supuesto 3 y evidencia / socios confirmados']},
+  {id:'resultados',label:'Cadena de resultados',hint:'Completen al superar casillas 4 y 5. Resultados a corto plazo → intermedios → impacto final.',fields:['Resultado a corto plazo (tangible, SMART)','Resultado intermedio','Impacto final esperado']},
+  {id:'productos',label:'Productos y mecanismos',hint:'Completen al superar casillas 11 y 12. Para cada producto: qué produce y por qué.',fields:['Producto / actividad principal','Resultado que produce','Mecanismo (por qué ese producto produce ese resultado)']},
+  {id:'indicadores',label:'Indicadores de verificación',hint:'Completen al superar casillas 14 y 15. Indicadores de resultado, no de actividad.',fields:['Indicador del resultado a corto plazo','Indicador del resultado intermedio','Indicador del impacto final / línea de base']},
+  {id:'sostenibilidad',label:'Alcance y sostenibilidad',hint:'Completen al superar casilla 18. ¿Es realista? ¿Qué garantiza que el cambio persiste?',fields:['Qué garantiza la sostenibilidad del cambio','Riesgo principal identificado','Estrategia alternativa si el supuesto más frágil falla']},
+];
+
+let numPlayers=3, currentPlayer=0, gameLog=[];
+const tableData={};
+TABLE_ROWS.forEach(r=>tableData[r.id]=null);
+
+function switchView(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='tabla') renderTabla();
+}
+
+function setPlayers(n){
+  numPlayers=n;currentPlayer=0;
+  PLAYERS.forEach(p=>p.pos=0);
+  [2,3,4].forEach(i=>{const b=document.getElementById('pb'+i);b.className='pbtn'+(i===n?' on':'');});
+  renderAll();addLog('Juego configurado con '+n+' grupos.');
+}
+
+function rollDice(){
+  const roll=Math.floor(Math.random()*6)+1;
+  document.getElementById('dice-display').textContent=['⚀','⚁','⚂','⚃','⚄','⚅'][roll-1];
+  const p=PLAYERS[currentPlayer];
+  const rawPos=Math.min(p.pos+roll,20);
+  const sq=SQUARES[rawPos];
+  let newPos=rawPos;
+  if(sq.move!==0){
+    newPos=Math.max(0,Math.min(20,rawPos+sq.move));
+    const extra=sq.move>0?'¡Avanza '+sq.move+' extra!':'¡Retrocede '+Math.abs(sq.move)+'!';
+    addLog(p.name+' sacó '+roll+' → casilla '+rawPos+'. '+extra+' → casilla '+newPos+'.');
+  } else {
+    addLog(p.name+' sacó '+roll+' → casilla '+newPos+'.');
+  }
+  p.pos=newPos;
+  document.getElementById('turn-info').textContent=p.name+' — casilla '+newPos+': '+SQUARES[newPos].label;
+  renderBoard();showQuestion(newPos);
+  if(newPos===20) addLog('¡¡'+p.name+' llegó a la META!!');
+}
+
+function showQuestion(n){
+  const sq=SQUARES[n];const p=PLAYERS[currentPlayer];
+  if(!sq.q){document.getElementById('qpanel').innerHTML='<div class="empty-qp">Casilla de salida. ¡El juego comienza aquí!</div>';return;}
+  const tL={objetivo:'Objetivo',resultado:'Resultado',supuesto:'Supuesto',producto:'Producto',indicador:'Indicador',bonus:'Bonus +2',peligro:'Peligro',meta:'Meta'};
+  const tBg={objetivo:'#CECBF6',resultado:'#9FE1CB',supuesto:'#FAC775',producto:'#F5C4B3',indicador:'#B5D4F4',bonus:'#C0DD97',peligro:'#F7C1C1',meta:'#CECBF6'};
+  const tCol={objetivo:'#3C3489',resultado:'#085041',supuesto:'#633806',producto:'#712B13',indicador:'#0C447C',bonus:'#27500A',peligro:'#791F1F',meta:'#3C3489'};
+  const expHtml=sq.exp?`
+    <button class="expand-btn" onclick="toggleExp(this)">
+      <span>Ver explicación y ejemplos</span><span class="expand-arrow">▼</span>
+    </button>
+    <div class="expansion">
+      <div class="exp-section">
+        <div class="exp-label">¿Qué significa esto?</div>
+        <div class="exp-text">${sq.exp.concepto}</div>
+      </div>
+      <div class="exp-section">
+        <div class="exp-label">Preguntas clave para discutir</div>
+        ${sq.exp.claves.map(c=>`<div class="exp-text" style="padding:4px 0;border-bottom:1px solid #CECBF6;margin-bottom:3px;">${c}</div>`).join('')}
+      </div>
+      <div class="exp-example">
+        <div class="exp-example-label">Ejemplo — sin coherencia</div>
+        <div class="exp-example-bad">${sq.exp.malo}</div>
+        <div class="exp-example-label" style="margin-top:6px;">Ejemplo — con coherencia</div>
+        <div class="exp-example-good">${sq.exp.bueno}</div>
+      </div>
+    </div>`:'';
+  const alertHtml=sq.alert?`<div class="qp-alert ${sq.alert.type}">${sq.alert.text}</div>`:'';
+  const regHtml=sq.registro?`<button class="register-btn" onclick="openRegistro(${n})">Registrar en tabla entregable</button>`:'';
+  let btns='';
+  if(sq.type==='meta') btns=`<button class="btn-ok" onclick="nextTurn()">Presentación completada</button>`;
+  else if(sq.type==='bonus') btns=`<button class="btn-ok" onclick="answerBonus()">Pasaron el bonus — avanzan 2</button><button class="btn-skip" onclick="nextTurn()">No pasaron — continuar</button>`;
+  else if(sq.type==='peligro') btns=`<button class="btn-ok" onclick="nextTurn()">Respondieron — continuar</button><button class="btn-fail" onclick="answerPeligro(${Math.abs(sq.move)})">No respondieron — retroceden ${Math.abs(sq.move)}</button>`;
+  else btns=`<button class="btn-ok" onclick="answerOk()">Respondieron bien — siguiente turno</button><button class="btn-fail" onclick="answerFail()">No pudieron responder — retroceden 1</button>${regHtml}`;
+
+  document.getElementById('qpanel').innerHTML=`
+    <div class="qp-meta" style="color:${tCol[sq.type]||'#444'};">
+      Casilla ${sq.n}
+      <span class="qp-type-badge" style="background:${tBg[sq.type]||'#eee'};color:${tCol[sq.type]||'#444'};">${tL[sq.type]||sq.type}</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:6px;background:${p.bg};color:${p.color};font-weight:500;">${p.name}</span>
+    </div>
+    <div class="qp-title">${sq.label}</div>
+    <div class="qp-question">${sq.q}</div>
+    ${expHtml}
+    ${alertHtml}
+    <div class="answer-btns">${btns}</div>`;
+}
+
+function toggleExp(btn){
+  const exp=btn.nextElementSibling;
+  const arrow=btn.querySelector('.expand-arrow');
+  const isOpen=exp.classList.contains('open');
+  exp.classList.toggle('open');
+  arrow.classList.toggle('open');
+  btn.querySelector('span').textContent=isOpen?'Ver explicación y ejemplos':'Ocultar explicación';
+}
+
+function openRegistro(n){
+  switchView('tabla',document.querySelectorAll('.ntab')[1]);
+  const sq=SQUARES[n];
+  const rowMap={1:'problema',2:'objetivo',4:'resultados',5:'resultados',7:'supuestos',8:'supuestos',9:'supuestos',11:'productos',12:'productos',14:'indicadores',15:'indicadores',17:'resultados',18:'sostenibilidad'};
+  const rowId=rowMap[n];
+  if(rowId){
+    const el=document.getElementById('trow-'+rowId);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+function answerOk(){addLog(PLAYERS[currentPlayer].name+' respondió casilla '+PLAYERS[currentPlayer].pos+'.');nextTurn();}
+function answerFail(){const p=PLAYERS[currentPlayer];p.pos=Math.max(0,p.pos-1);addLog(p.name+' retrocede a casilla '+p.pos+'.');renderBoard();nextTurn();}
+function answerBonus(){const p=PLAYERS[currentPlayer];p.pos=Math.min(20,p.pos+2);addLog(p.name+' bonus → casilla '+p.pos+'.');renderBoard();if(p.pos===20)addLog('¡¡'+p.name+' llegó a la META!!');nextTurn();}
+function answerPeligro(n){const p=PLAYERS[currentPlayer];p.pos=Math.max(0,p.pos-n);addLog(p.name+' retrocede '+n+' → casilla '+p.pos+'.');renderBoard();nextTurn();}
+
+function nextTurn(){
+  currentPlayer=(currentPlayer+1)%numPlayers;
+  const p=PLAYERS[currentPlayer];
+  document.getElementById('turn-info').textContent='Turno de '+p.name+' — casilla '+p.pos+'. ¡Tira el dado!';
+  document.getElementById('dice-display').textContent='—';
+  renderTokens();
+  document.getElementById('qpanel').innerHTML='<div class="empty-qp">Turno de <strong>'+p.name+'</strong>. Tira el dado para continuar.</div>';
+}
+
+function buildOrder(){
+  const rows=[];
+  for(let r=0;r<4;r++){const row=[];for(let c=0;c<5;c++)row.push(r*5+c+1);if(r%2===1)row.reverse();rows.push(row);}
+  rows.reverse();return[0,...rows.flat()];
+}
+
+function renderBoard(){
+  const order=buildOrder();
+  const tL={objetivo:'Objetivo',resultado:'Resultado',supuesto:'Supuesto',producto:'Producto',indicador:'Indicador',bonus:'Bonus +2',peligro:'Peligro ↓',meta:'Meta',start:''};
+  document.getElementById('board').innerHTML=order.map(n=>{
+    const sq=SQUARES[n];
+    const tokens=PLAYERS.slice(0,numPlayers).filter(p=>p.pos===n);
+    const isCurr=PLAYERS[currentPlayer].pos===n;
+    const toks=tokens.map(p=>`<div class="sq-tok" style="background:${p.color};">${p.name[7]}</div>`).join('');
+    return `<div class="sq sq-${sq.type} ${isCurr?'current':''}" onclick="showQuestion(${n})"
+      style="${isCurr?'border-color:'+PLAYERS[currentPlayer].color+';':''}" >
+      <div><div class="sq-num">Casilla ${n}</div><div class="sq-label">${sq.label}</div></div>
+      <div>${sq.type!=='start'&&sq.type!=='meta'?`<div class="sq-type">${tL[sq.type]||''}</div>`:''}<div class="sq-tokens">${toks}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderTokens(){
+  document.getElementById('player-tokens').innerHTML=PLAYERS.slice(0,numPlayers).map((p,i)=>
+    `<div class="player-token ${i===currentPlayer?'active-player':''}" style="background:${p.bg};color:${p.color};border-color:${p.color};" title="${p.name} — Casilla ${p.pos}">${i+1}</div>`
+  ).join('');
+}
+
+function renderAll(){renderBoard();renderTokens();}
+function addLog(msg){gameLog.unshift(msg);if(gameLog.length>20)gameLog.pop();document.getElementById('game-log').innerHTML=gameLog.join('<br>');}
+function resetGame(){PLAYERS.forEach(p=>p.pos=0);currentPlayer=0;gameLog=[];TABLE_ROWS.forEach(r=>tableData[r.id]=null);document.getElementById('dice-display').textContent='—';document.getElementById('turn-info').textContent='Juego reiniciado.';document.getElementById('qpanel').innerHTML='<div class="empty-qp">Toca una casilla o tira el dado para ver la pregunta.</div>';document.getElementById('game-log').textContent='El juego comienza.';renderAll();}
+
+function renderTabla(){
+  const content=document.getElementById('tabla-content');
+  content.innerHTML=TABLE_ROWS.map(row=>{
+    const saved=tableData[row.id];
+    const fieldsHtml=saved?
+      `<div class="saved-block">${row.fields.map((f,i)=>`<div class="saved-item"><strong>${f}:</strong> ${saved[i]||'—'}</div>`).join('')}</div>
+       <div class="btn-row"><button class="btn-edit" onclick="editRow('${row.id}')">Editar</button></div>`
+      :
+      `${row.fields.map((f,i)=>`
+        <div style="margin-bottom:10px;">
+          <div class="field-lbl">${f}</div>
+          <textarea id="tf-${row.id}-${i}" placeholder="Escriban aquí la respuesta del grupo..." rows="2"></textarea>
+        </div>`).join('')}
+       <div class="btn-row"><button class="btn-save" onclick="saveRow('${row.id}',${row.fields.length})">Guardar</button></div>`;
+    return `<div class="tabla-row-card" id="trow-${row.id}">
+      <div class="tabla-row-head">
+        <div class="tabla-row-label">${row.label}</div>
+        <span class="status-pill ${saved?'status-done':'status-pend'}">${saved?'Completada':'Pendiente'}</span>
+      </div>
+      <div class="tabla-section-hint">${row.hint}</div>
+      ${fieldsHtml}
+    </div>`;
+  }).join('');
+
+  const anyDone=TABLE_ROWS.some(r=>tableData[r.id]);
+  const allDone=TABLE_ROWS.every(r=>tableData[r.id]);
+  content.innerHTML+=`<div class="export-row" style="gap:8px;display:flex;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;">
+    ${anyDone?`<button class="btn-edit" onclick="descargarParcial()" style="border-color:#AFA9EC;color:#3C3489;">Guardar avance (parcial)</button>`:''}
+    ${allDone?`<button class="btn-copy" onclick="descargarTabla()">Descargar tabla completa</button>`:''}
+  </div>`;
+}
+
+function saveRow(id,n){
+  const vals=[];
+  for(let i=0;i<n;i++){const el=document.getElementById('tf-'+id+'-'+i);vals.push(el?el.value.trim():'');}
+  if(vals.every(v=>!v)){alert('Completen al menos un campo antes de guardar.');return;}
+  tableData[id]=vals;
+  renderTabla();
+}
+
+function editRow(id){tableData[id]=null;renderTabla();setTimeout(()=>{const el=document.getElementById('trow-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},100);}
+
+function generarTexto(){
+  const fecha=new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
+  let text='TABLA DE TEORÍA DE CAMBIO\n';
+  text+='El Gran Cambio — Comunicación Social — EAFIT 2026\n';
+  text+='Fecha: '+fecha+'\n';
+  text+='='.repeat(55)+'\n\n';
+  TABLE_ROWS.forEach(row=>{
+    text+=row.label.toUpperCase()+'\n';
+    text+='-'.repeat(40)+'\n';
+    const saved=tableData[row.id];
+    if(saved) row.fields.forEach((f,i)=>text+=(saved[i]?f+':\n'+saved[i]+'\n\n':''));
+    else text+='(Sección sin completar)\n\n';
+  });
+  return text;
+}
+
+function descargarTabla(){
+  const text=generarTexto();
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='teoria_de_cambio_'+new Date().toISOString().slice(0,10)+'.txt';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function descargarParcial(){
+  const text=generarTexto();
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='teoria_de_cambio_parcial_'+new Date().toISOString().slice(0,10)+'.txt';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+setPlayers(3);
+</script>
+</body>
+</html>
